@@ -1,0 +1,501 @@
+<<<<<<< import React, { useState } from 'react';
+import { Brain, Plus, Minus, Star, TrendingUp, BookOpen, Target } from 'lucide-react';
+
+interface Skill {
+  id: string;
+  name: string;
+  category: string;
+  proficiency: number;
+  isNew?: boolean;
+}
+
+export default function SkillsAssessment() {
+  const [skills, setSkills] = useState<Skill[]>([
+    { id: '1', name: 'JavaScript', category: 'Programming', proficiency: 8 },
+    { id: '2', name: 'Python', category: 'Programming', proficiency: 6 },
+    { id: '3', name: 'React', category: 'Frontend', proficiency: 7 },
+    { id: '4', name: 'SQL', category: 'Database', proficiency: 5 },
+    { id: '5', name: 'Communication', category: 'Soft Skills', proficiency: 8 },
+    { id: '6', name: 'Problem Solving', category: 'Soft Skills', proficiency: 9 },
+  ]);
+
+  const [newSkill, setNewSkill] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Programming');
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  const categories = ['Programming', 'Frontend', 'Backend', 'Database', 'Design', 'Soft Skills', 'Other'];
+
+  const handleProficiencyChange = (skillId: string, newProficiency: number) => {
+    setSkills(skills.map(skill => 
+      skill.id === skillId ? { ...skill, proficiency: newProficiency } : skill
+    ));
+  };
+
+  const addSkill = () => {
+    if (newSkill.trim()) {
+      const skill: Skill = {
+        id: Date.now().toString(),
+        name: newSkill.trim(),
+        category: selectedCategory,
+        proficiency: 1,
+        isNew: true,
+      };
+      setSkills([...skills, skill]);
+      setNewSkill('');
+      setShowAddForm(false);
+    }
+  };
+
+  const removeSkill = (skillId: string) => {
+    setSkills(skills.filter(skill => skill.id !== skillId));
+  };
+
+  const getProficiencyLabel = (level: number) => {
+    if (level <= 2) return 'Beginner';
+    if (level <= 5) return 'Intermediate';
+    if (level <= 7) return 'Advanced';
+    return 'Expert';
+  };
+
+  const getProficiencyColor = (level: number) => {
+    if (level <= 2) return 'from-red-400 to-red-500';
+    if (level <= 5) return 'from-yellow-400 to-yellow-500';
+    if (level <= 7) return 'from-blue-400 to-blue-500';
+    return 'from-green-400 to-green-500';
+  };
+
+  const groupedSkills = skills.reduce((acc, skill) => {
+    if (!acc[skill.category]) {
+      acc[skill.category] = [];
+    }
+    acc[skill.category].push(skill);
+    return acc;
+  }, {} as Record<string, Skill[]>);
+
+  return (
+    <div className="p-8 max-w-6xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-800 mb-2">Skills Assessment</h1>
+        <p className="text-slate-600">Evaluate your current skills and discover areas for growth</p>
+      </div>
+
+      {/* Skills Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+          <Brain className="h-8 w-8 mb-3" />
+          <h3 className="text-lg font-semibold mb-1">Total Skills</h3>
+          <p className="text-2xl font-bold">{skills.length}</p>
+        </div>
+        <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl p-6 text-white">
+          <Star className="h-8 w-8 mb-3" />
+          <h3 className="text-lg font-semibold mb-1">Expert Level</h3>
+          <p className="text-2xl font-bold">{skills.filter(s => s.proficiency >= 8).length}</p>
+        </div>
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-white">
+          <TrendingUp className="h-8 w-8 mb-3" />
+          <h3 className="text-lg font-semibold mb-1">Avg Proficiency</h3>
+          <p className="text-2xl font-bold">
+            {Math.round(skills.reduce((sum, s) => sum + s.proficiency, 0) / skills.length * 10) / 10}
+          </p>
+        </div>
+      </div>
+
+      {/* Skills by Category */}
+      <div className="space-y-8">
+        {Object.entries(groupedSkills).map(([category, categorySkills]) => (
+          <div key={category} className="bg-white rounded-xl p-6 shadow-lg border border-slate-100">
+            <h2 className="text-xl font-semibold text-slate-800 mb-4">{category}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {categorySkills.map((skill) => (
+                <div 
+                  key={skill.id} 
+                  className={`p-4 border rounded-lg transition-all duration-300 ${
+                    skill.isNew ? 'border-blue-300 bg-blue-50' : 'border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-medium text-slate-800">{skill.name}</h3>
+                    <button
+                      onClick={() => removeSkill(skill.id)}
+                      className="text-red-400 hover:text-red-600 transition-colors"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between text-sm mb-2">
+                      <span className="text-slate-600">{getProficiencyLabel(skill.proficiency)}</span>
+                      <span className="font-medium">{skill.proficiency}/10</span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div 
+                        className={`bg-gradient-to-r ${getProficiencyColor(skill.proficiency)} h-2 rounded-full transition-all duration-500`}
+                        style={{ width: `${skill.proficiency * 10}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleProficiencyChange(skill.id, Math.max(1, skill.proficiency - 1))}
+                        className="w-6 h-6 bg-slate-200 hover:bg-slate-300 rounded flex items-center justify-center transition-colors"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={() => handleProficiencyChange(skill.id, Math.min(10, skill.proficiency + 1))}
+                        className="w-6 h-6 bg-blue-500 hover:bg-blue-600 text-white rounded flex items-center justify-center transition-colors"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    </div>
+                    {skill.proficiency >= 8 && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Add New Skill */}
+      <div className="mt-8 bg-white rounded-xl p-6 shadow-lg border border-slate-100">
+        <h2 className="text-xl font-semibold text-slate-800 mb-4">Add New Skill</h2>
+        {!showAddForm ? (
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Skill</span>
+          </button>
+        ) : (
+          <div className="flex items-center space-x-4">
+            <input
+              type="text"
+              value={newSkill}
+              onChange={(e) => setNewSkill(e.target.value)}
+              placeholder="Enter skill name"
+              className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+            <button
+              onClick={addSkill}
+              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+            >
+              Add
+            </button>
+            <button
+              onClick={() => setShowAddForm(false)}
+              className="px-4 py-2 bg-slate-500 hover:bg-slate-600 text-white rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Action Buttons */}
+      <div className="mt-8 flex items-center justify-center space-x-4">
+        <button className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white rounded-lg transition-all duration-200 transform hover:scale-105">
+          <Target className="h-5 w-5" />
+          <span>Get Career Recommendations</span>
+        </button>
+        <button className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-lg transition-all duration-200 transform hover:scale-105">
+          <BookOpen className="h-5 w-5" />
+          <span>Find Learning Resources</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+=======
+
+import React, { useState } from 'react';
+import { Brain, Plus, Minus, Star, TrendingUp, BookOpen, Target } from 'lucide-react';
+
+interface Skill {
+  id: string;
+  name: string;
+  category: string;
+  proficiency: number;
+  isNew?: boolean;
+}
+
+export default function SkillsAssessment() {
+  const [skills, setSkills] = useState<Skill[]>([
+    { id: '1', name: 'JavaScript', category: 'Programming', proficiency: 8 },
+    { id: '2', name: 'Python', category: 'Programming', proficiency: 6 },
+    { id: '3', name: 'React', category: 'Frontend', proficiency: 7 },
+    { id: '4', name: 'SQL', category: 'Database', proficiency: 5 },
+    { id: '5', name: 'Communication', category: 'Soft Skills', proficiency: 8 },
+    { id: '6', name: 'Problem Solving', category: 'Soft Skills', proficiency: 9 },
+  ]);
+
+  const [newSkill, setNewSkill] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Programming');
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  const categories = ['Programming', 'Frontend', 'Backend', 'Database', 'Design', 'Soft Skills', 'Other'];
+
+  const handleProficiencyChange = (skillId: string, newProficiency: number) => {
+    setSkills(skills.map(skill => 
+      skill.id === skillId ? { ...skill, proficiency: newProficiency } : skill
+    ));
+  };
+
+  const addSkill = () => {
+    if (newSkill.trim()) {
+      const skill: Skill = {
+        id: Date.now().toString(),
+        name: newSkill.trim(),
+        category: selectedCategory,
+        proficiency: 1,
+        isNew: true,
+      };
+      setSkills([...skills, skill]);
+      setNewSkill('');
+      setShowAddForm(false);
+    }
+  };
+
+  const removeSkill = (skillId: string) => {
+    setSkills(skills.filter(skill => skill.id !== skillId));
+  };
+
+  const getProficiencyLabel = (level: number) => {
+    if (level <= 2) return 'Beginner';
+    if (level <= 5) return 'Intermediate';
+    if (level <= 7) return 'Advanced';
+    return 'Expert';
+  };
+
+  const getProficiencyColor = (level: number) => {
+    if (level <= 2) return 'from-red-400 to-red-500';
+    if (level <= 5) return 'from-yellow-400 to-yellow-500';
+    if (level <= 7) return 'from-blue-400 to-blue-500';
+    return 'from-green-400 to-green-500';
+  };
+
+  const groupedSkills = skills.reduce((acc, skill) => {
+    if (!acc[skill.category]) {
+      acc[skill.category] = [];
+    }
+    acc[skill.category].push(skill);
+    return acc;
+  }, {} as Record<string, Skill[]>);
+
+  // New assessment summary logic
+  const proficiencyCounts = {
+    Beginner: 0,
+    Intermediate: 0,
+    Advanced: 0,
+    Expert: 0,
+  };
+
+  skills.forEach(skill => {
+    const label = getProficiencyLabel(skill.proficiency);
+    proficiencyCounts[label as keyof typeof proficiencyCounts]++;
+  });
+
+  const categoriesProficiency = Object.entries(groupedSkills).map(([category, skills]) => {
+    const avgProficiency = skills.reduce((sum, s) => sum + s.proficiency, 0) / skills.length;
+    return { category, avgProficiency };
+  });
+
+  const strengths = categoriesProficiency.filter(c => c.avgProficiency >= 7).map(c => c.category);
+  const improvements = categoriesProficiency.filter(c => c.avgProficiency <= 4).map(c => c.category);
+
+  return (
+    <div className="p-8 max-w-6xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-800 mb-2">Skills Assessment</h1>
+        <p className="text-slate-600">Evaluate your current skills and discover areas for growth</p>
+      </div>
+
+      {/* Assessment Summary */}
+      <div className="mb-8 p-6 bg-white rounded-xl shadow border border-slate-200">
+        <h2 className="text-xl font-semibold mb-4">Assessment Summary</h2>
+        <p>Total Skills: <strong>{skills.length}</strong></p>
+        <p>Beginner Level Skills: <strong>{proficiencyCounts.Beginner}</strong></p>
+        <p>Intermediate Level Skills: <strong>{proficiencyCounts.Intermediate}</strong></p>
+        <p>Advanced Level Skills: <strong>{proficiencyCounts.Advanced}</strong></p>
+        <p>Expert Level Skills: <strong>{proficiencyCounts.Expert}</strong></p>
+
+        <div className="mt-4">
+          <h3 className="font-semibold">Strengths</h3>
+          {strengths.length > 0 ? (
+            <ul className="list-disc list-inside">
+              {strengths.map(category => (
+                <li key={category}>{category}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>No strong skill categories identified yet.</p>
+          )}
+        </div>
+
+        <div className="mt-4">
+          <h3 className="font-semibold">Areas for Improvement</h3>
+          {improvements.length > 0 ? (
+            <ul className="list-disc list-inside">
+              {improvements.map(category => (
+                <li key={category}>{category}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>No significant improvement areas identified yet.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Skills Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+          <Brain className="h-8 w-8 mb-3" />
+          <h3 className="text-lg font-semibold mb-1">Total Skills</h3>
+          <p className="text-2xl font-bold">{skills.length}</p>
+        </div>
+        <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl p-6 text-white">
+          <Star className="h-8 w-8 mb-3" />
+          <h3 className="text-lg font-semibold mb-1">Expert Level</h3>
+          <p className="text-2xl font-bold">{skills.filter(s => s.proficiency >= 8).length}</p>
+        </div>
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-white">
+          <TrendingUp className="h-8 w-8 mb-3" />
+          <h3 className="text-lg font-semibold mb-1">Avg Proficiency</h3>
+          <p className="text-2xl font-bold">
+            {Math.round(skills.reduce((sum, s) => sum + s.proficiency, 0) / skills.length * 10) / 10}
+          </p>
+        </div>
+      </div>
+
+      {/* Skills by Category */}
+      <div className="space-y-8">
+        {Object.entries(groupedSkills).map(([category, categorySkills]) => (
+          <div key={category} className="bg-white rounded-xl p-6 shadow-lg border border-slate-100">
+            <h2 className="text-xl font-semibold text-slate-800 mb-4">{category}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {categorySkills.map((skill) => (
+                <div 
+                  key={skill.id} 
+                  className={`p-4 border rounded-lg transition-all duration-300 ${
+                    skill.isNew ? 'border-blue-300 bg-blue-50' : 'border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-medium text-slate-800">{skill.name}</h3>
+                    <button
+                      onClick={() => removeSkill(skill.id)}
+                      className="text-red-400 hover:text-red-600 transition-colors"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between text-sm mb-2">
+                      <span className="text-slate-600">{getProficiencyLabel(skill.proficiency)}</span>
+                      <span className="font-medium">{skill.proficiency}/10</span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div 
+                        className={`bg-gradient-to-r ${getProficiencyColor(skill.proficiency)} h-2 rounded-full transition-all duration-500`}
+                        style={{ width: `${skill.proficiency * 10}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleProficiencyChange(skill.id, Math.max(1, skill.proficiency - 1))}
+                        className="w-6 h-6 bg-slate-200 hover:bg-slate-300 rounded flex items-center justify-center transition-colors"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={() => handleProficiencyChange(skill.id, Math.min(10, skill.proficiency + 1))}
+                        className="w-6 h-6 bg-blue-500 hover:bg-blue-600 text-white rounded flex items-center justify-center transition-colors"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    </div>
+                    {skill.proficiency >= 8 && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Add New Skill */}
+      <div className="mt-8 bg-white rounded-xl p-6 shadow-lg border border-slate-100">
+        <h2 className="text-xl font-semibold text-slate-800 mb-4">Add New Skill</h2>
+        {!showAddForm ? (
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Skill</span>
+          </button>
+        ) : (
+          <div className="flex items-center space-x-4">
+            <input
+              type="text"
+              value={newSkill}
+              onChange={(e) => setNewSkill(e.target.value)}
+              placeholder="Enter skill name"
+              className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+            <button
+              onClick={addSkill}
+              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+            >
+              Add
+            </button>
+            <button
+              onClick={() => setShowAddForm(false)}
+              className="px-4 py-2 bg-slate-500 hover:bg-slate-600 text-white rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Action Buttons */}
+      <div className="mt-8 flex items-center justify-center space-x-4">
+        <button className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white rounded-lg transition-all duration-200 transform hover:scale-105">
+          <Target className="h-5 w-5" />
+          <span>Get Career Recommendations</span>
+        </button>
+        <button className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-lg transition-all duration-200 transform hover:scale-105">
+          <BookOpen className="h-5 w-5" />
+          <span>Find Learning Resources</span>
+        </button>
+      </div>
+    </div>
+  );
+}
